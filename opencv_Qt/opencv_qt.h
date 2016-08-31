@@ -4,6 +4,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QFileDialog>
 #include <QLabel>
+#include <QPainter>
 #include "ui_opencv_qt.h"
 #include <opencv2/core/core.hpp>  
 #include <opencv2/highgui/highgui.hpp> 
@@ -28,7 +29,8 @@ private slots:
 	void on_LoadVideo_clicked();
 	void on_Process_clicked();
 	void on_SaveImage_clicked();
-	void opencv_Qt::videoplayer(CvCapture* capture);
+	void videoplayer(CvCapture* capture);
+	void opencv_Qt::Addword2Image();
 };
 
 #endif // OPENCV_QT_H

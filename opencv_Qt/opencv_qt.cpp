@@ -4,6 +4,7 @@ int countFrames = 0;
 int key;
 int stopflag = 1;
 int flag = 0;
+bool flipflag = false;
 int speed = 33;
 opencv_Qt::opencv_Qt(QWidget *parent)
 	: QMainWindow(parent)
@@ -11,6 +12,7 @@ opencv_Qt::opencv_Qt(QWidget *parent)
 	ui.setupUi(this);
 	connect(ui.pushButton, SIGNAL(clicked()), this, SLOT(on_LoadImage_clicked()));
 	connect(ui.pushButton_2, SIGNAL(clicked()), this, SLOT(on_Process_clicked()));
+	connect(ui.pushButton_3, SIGNAL(clicked()), this, SLOT(on_LoadVideo_clicked()));
 }
 
 opencv_Qt::~opencv_Qt()
@@ -45,8 +47,10 @@ void opencv_Qt::on_LoadVideo_clicked()
 }
 void opencv_Qt::on_Process_clicked()
 {
+	flipflag=!flipflag;
 	cv::flip(image, image, 1);
 	img = QImage((const unsigned char*)(image.data), image.cols, image.rows, QImage::Format_RGB32);
+	//Addword2Image();
 	label->setPixmap(QPixmap::fromImage(img));
 	label->resize(label->pixmap()->size());
 	label->show();
@@ -55,11 +59,31 @@ void opencv_Qt::on_Process_clicked()
 }
 void opencv_Qt::on_SaveImage_clicked()
 {
-	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Image"), ".", tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));//getOpenFileName(this, tr("Open Image"), ".", tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
+	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Image"), ".", tr("Image Files (*.png *.jpg *.jpeg *.bmp)"));
 	if (fileName != NULL)
 	{ 
-		cv::imwrite(fileName.toStdString().data(), image); 
+		//这个为图片的压缩度。0/100
+		int n = 100;
+		//保存图片
+		img.save(fileName.toStdString().data(), "JPG", n);
+		//cv::imwrite(fileName.toStdString().data(), image); 
 	}
+}
+void opencv_Qt::Addword2Image()
+{
+	QPainter painter(&img);
+	//设置画刷模式
+	painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+	//改变画笔和字体
+	QPen pen = painter.pen();
+	pen.setColor(Qt::red);
+	QFont font = painter.font();
+	font.setBold(true);//加粗
+	font.setPixelSize(30);//改变字体大小
+	painter.setPen(pen);
+	painter.setFont(font);
+	//将文字绘制在图片中心位置
+	painter.drawText(img.rect(), Qt::AlignCenter, "s  c  z");
 }
 void opencv_Qt::videoplayer(CvCapture* capture)
 {
@@ -76,6 +100,7 @@ void opencv_Qt::videoplayer(CvCapture* capture)
 		/************************************************************************/
 		image = NULL;
 		image = cv::Mat(frame, 1);
+		if(flipflag==true)cv::flip(image, image, 1);//镜面反转
 		cv::cvtColor(image, image, CV_BGR2RGBA);
 		img = QImage((const unsigned char*)(image.data), image.cols, image.rows, QImage::Format_RGB32);
 		label->move(10, 10);
